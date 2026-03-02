@@ -80,8 +80,12 @@ export const viaturasService = {
   buscar: (id: string) => api.get(`/viaturas/${id}`),
   atualizarStatus: (id: string, status: string) =>
     api.patch(`/viaturas/${id}/status`, { status }),
+  listarManutencoes: (params?: Record<string, unknown>) =>
+    api.get('/manutencoes', { params }),
   criarManutencao: (data: Record<string, unknown>) =>
     api.post('/manutencoes', data),
+  concluirManutencao: (id: string, data: Record<string, unknown>) =>
+    api.patch(`/manutencoes/${id}/concluir`, data),
 }
 
 export const inteligenciaService = {
@@ -90,4 +94,8 @@ export const inteligenciaService = {
   estatisticas: (params?: Record<string, unknown>) =>
     api.get('/inteligencia/estatisticas', { params }),
   tendencias: () => api.get('/inteligencia/tendencias'),
+}
+
+export const auditoriaService = {
+  listar: () => api.get('/auditoria'),
 }

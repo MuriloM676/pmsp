@@ -183,6 +183,11 @@ router.patch('/viaturas/:id/status',
   viaturasController.atualizarStatus
 );
 
+router.get('/manutencoes',
+  autenticar,
+  viaturasController.listarManutencoes
+);
+
 router.post('/manutencoes',
   autenticar,
   autorizar('Supervisor', 'Gestor', 'Administrador'),

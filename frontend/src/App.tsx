@@ -6,10 +6,16 @@ import AppLayout from '@/components/layout/AppLayout'
 import Login from '@/pages/Login'
 import Dashboard from '@/pages/Dashboard'
 import Ocorrencias from '@/pages/Ocorrencias'
+import OcorrenciaDetalhe from '@/pages/OcorrenciaDetalhe'
 import NovaOcorrencia from '@/pages/NovaOcorrencia'
 import Viaturas from '@/pages/Viaturas'
 import Policiais from '@/pages/Policiais'
+import Escalas from '@/pages/Escalas'
+import Manutencoes from '@/pages/Manutencoes'
 import IntelMapa from '@/pages/IntelMapa'
+import IntelStats from '@/pages/IntelStats'
+import Auditoria from '@/pages/Auditoria'
+import Configuracoes from '@/pages/Configuracoes'
 
 const qc = new QueryClient({
   defaultOptions: {
@@ -32,12 +38,18 @@ function App() {
             <PrivateRoute>
               <AppLayout>
                 <Routes>
-                  <Route path="/"                   element={<Dashboard />} />
-                  <Route path="/ocorrencias"         element={<Ocorrencias />} />
-                  <Route path="/ocorrencias/novo"    element={<NovaOcorrencia />} />
-                  <Route path="/viaturas"            element={<Viaturas />} />
-                  <Route path="/policiais"           element={<Policiais />} />
-                  <Route path="/inteligencia/mapa"   element={<IntelMapa />} />
+                  <Route path="/"                       element={<Dashboard />} />
+                  <Route path="/ocorrencias"             element={<Ocorrencias />} />
+                  <Route path="/ocorrencias/novo"        element={<NovaOcorrencia />} />
+                  <Route path="/ocorrencias/:id"         element={<OcorrenciaDetalhe />} />
+                  <Route path="/viaturas"                element={<Viaturas />} />
+                  <Route path="/policiais"               element={<Policiais />} />
+                  <Route path="/escalas"                 element={<Escalas />} />
+                  <Route path="/manutencoes"             element={<Manutencoes />} />
+                  <Route path="/inteligencia/mapa"       element={<IntelMapa />} />
+                  <Route path="/inteligencia/stats"      element={<IntelStats />} />
+                  <Route path="/auditoria"               element={<Auditoria />} />
+                  <Route path="/configuracoes"           element={<Configuracoes />} />
                   <Route path="*" element={
                     <div className="flex flex-col items-center justify-center py-20">
                       <div className="font-rajdhani text-6xl text-[var(--text3)] font-bold">404</div>

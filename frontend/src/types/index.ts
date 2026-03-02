@@ -41,6 +41,7 @@ export interface Ocorrencia {
   numero_bo: string
   natureza: NaturezaOcorrencia
   descricao?: string
+  observacoes?: string
   prioridade: PrioridadeOcorrencia
   status: StatusOcorrencia
   logradouro?: string
@@ -57,6 +58,7 @@ export interface Ocorrencia {
   viatura_prefixo?: string
   tempo_resposta_min?: number
   envolve_menor: boolean
+  morte_no_local: boolean
   uso_de_arma: boolean
   lat?: number
   lng?: number

@@ -223,6 +223,54 @@ const registrarPosicao = async (req, res) => {
 // ============================================================
 
 /**
+ * GET /api/v1/manutencoes
+ */
+const listarManutencoes = async (req, res) => {
+  const { resolvido, limit = 50, page = 1 } = req.query;
+  const offset = (page - 1) * limit;
+
+  const conditions = [];
+  const params = [];
+
+  if (resolvido !== undefined) {
+    params.push(resolvido === 'true');
+    conditions.push(`m.resolvido = $${params.length}`);
+  }
+
+  const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
+
+  try {
+    const { rows: total } = await query(
+      `SELECT COUNT(*) FROM manutencoes m ${where}`, params
+    );
+
+    params.push(Number(limit), offset);
+    const { rows } = await query(
+      `SELECT m.*, v.prefixo, v.placa, v.tipo AS tipo_viatura
+       FROM manutencoes m
+       JOIN viaturas v ON v.id = m.id_viatura
+       ${where}
+       ORDER BY m.criado_em DESC
+       LIMIT $${params.length - 1} OFFSET $${params.length}`,
+      params
+    );
+
+    res.json({
+      dados: rows,
+      paginacao: {
+        total: Number(total[0].count),
+        pagina: Number(page),
+        limite: Number(limit),
+        paginas: Math.ceil(Number(total[0].count) / limit),
+      },
+    });
+  } catch (err) {
+    logger.error('Erro ao listar manutenções', { error: err.message });
+    res.status(500).json({ erro: 'Erro ao listar manutenções' });
+  }
+};
+
+/**
  * POST /api/v1/manutencoes
  */
 const criarManutencao = async (req, res) => {
@@ -306,5 +354,5 @@ const concluirManutencao = async (req, res) => {
 
 module.exports = {
   listar, buscarPorId, criar, atualizarStatus,
-  registrarPosicao, criarManutencao, concluirManutencao,
+  registrarPosicao, listarManutencoes, criarManutencao, concluirManutencao,
 };
