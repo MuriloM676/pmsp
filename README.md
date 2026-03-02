@@ -219,9 +219,3 @@ sigpol/
 
 > Desenvolvido para uso interno exclusivo da PMESP.
 > Qualquer acesso não autorizado é crime (Art. 154-A do Código Penal).
-
-  ✅ Administrador   admin        → Admin@2026!
-  ✅ Comandante      comandante   → Cmd@2026!
-  ✅ Gestor          gestor       → Gestor@2026!
-  ✅ Supervisor      supervisor   → Super@2026!
-  ✅ Operador        operador     → Oper@2026!
