@@ -1,0 +1,126 @@
+# docker-compose.yml — SIGPOL Stack Completa
+# Uso: docker compose up -d
+
+services:
+
+  # ====================================================
+  #  PostgreSQL + PostGIS
+  # ====================================================
+  postgres:
+    image: postgis/postgis:16-3.4
+    container_name: sigpol_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       sigpol
+      POSTGRES_USER:     sigpol_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-sigpol_dev_pass}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql:ro
+    ports:
+      - "5432:5432"   # exposto para desenvolvimento local
+    networks:
+      - sigpol_net
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sigpol_user -d sigpol"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ====================================================
+  #  Redis (sem senha em dev)
+  # ====================================================
+  redis:
+    image: redis:7-alpine
+    container_name: sigpol_redis
+    restart: unless-stopped
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redisdata:/data
+    networks:
+      - sigpol_net
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ====================================================
+  #  API Backend (Node.js)
+  # ====================================================
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sigpol_api
+    restart: unless-stopped
+    environment:
+      NODE_ENV:       development
+      PORT:           3001
+      DB_HOST:        postgres
+      DB_PORT:        5432
+      DB_NAME:        sigpol
+      DB_USER:        sigpol_user
+      DB_PASSWORD:    ${DB_PASSWORD:-sigpol_dev_pass}
+      DB_POOL_MIN:    2
+      DB_POOL_MAX:    10
+      JWT_SECRET:     ${JWT_SECRET:-sigpol_dev_jwt_secret_trocar_em_producao}
+      JWT_EXPIRES_IN: 8h
+      BCRYPT_ROUNDS:  10
+      CORS_ORIGINS:   ${CORS_ORIGINS:-http://localhost:3000,http://localhost:80}
+      LOG_LEVEL:      info
+    ports:
+      - "3001:3001"   # exposto para debug
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - sigpol_net
+    volumes:
+      - uploads:/app/uploads
+      - logs_api:/app/logs
+
+  # ====================================================
+  #  Frontend React
+  # ====================================================
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sigpol_frontend
+    restart: unless-stopped
+    networks:
+      - sigpol_net
+    depends_on:
+      - backend
+
+  # ====================================================
+  #  Nginx (HTTP apenas em dev — sem SSL)
+  # ====================================================
+  nginx:
+    image: nginx:1.25-alpine
+    container_name: sigpol_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.dev.conf:/etc/nginx/conf.d/default.conf:ro
+      - logs_nginx:/var/log/nginx
+    depends_on:
+      - backend
+      - frontend
+    networks:
+      - sigpol_net
+
+volumes:
+  pgdata:
+  redisdata:
+  uploads:
+  logs_api:
+  logs_nginx:
+
+networks:
+  sigpol_net:
+    driver: bridge

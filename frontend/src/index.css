@@ -1,0 +1,129 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import 'leaflet/dist/leaflet.css';
+
+:root {
+  --navy:   #050d1a;
+  --navy2:  #091525;
+  --navy3:  #0d1f35;
+  --panel:  #0a1628;
+  --panel2: #0e1e33;
+  --border: rgba(0,150,255,0.15);
+  --blue:   #0096ff;
+  --blue2:  #00c3ff;
+  --cyan:   #00e5ff;
+  --gold:   #f5a623;
+  --red:    #ff3b3b;
+  --green:  #00e676;
+  --text:   #cce4ff;
+  --text2:  #7aaacf;
+  --text3:  #3d6a8a;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--navy);
+  color: var(--text);
+  font-family: 'Exo 2', sans-serif;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Grid background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(0,150,255,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,150,255,0.025) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--navy2); }
+::-webkit-scrollbar-thumb { background: rgba(0,150,255,0.3); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,150,255,0.5); }
+
+/* Leaflet dark overrides */
+.leaflet-container { background: #0a1628 !important; }
+.leaflet-tile { filter: brightness(0.6) saturate(0.4) hue-rotate(180deg); }
+
+@layer components {
+  .btn {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded-md text-xs font-semibold
+           tracking-widest uppercase cursor-pointer transition-all duration-200 border-none;
+  }
+  .btn-primary {
+    @apply bg-gradient-to-r from-blue-500 to-blue-700 text-white
+           shadow-[0_4px_15px_rgba(0,150,255,0.3)]
+           hover:shadow-[0_4px_25px_rgba(0,150,255,0.5)] hover:-translate-y-px;
+  }
+  .btn-outline {
+    @apply bg-transparent text-[var(--text2)] border border-[var(--border)]
+           hover:border-[var(--blue)] hover:text-[var(--blue2)];
+  }
+  .btn-danger {
+    @apply bg-red-600/20 text-red-400 border border-red-600/30
+           hover:bg-red-600/30;
+  }
+
+  .panel {
+    @apply bg-[var(--panel)] border border-[var(--border)] rounded-xl overflow-hidden;
+  }
+  .panel-header {
+    @apply flex items-center justify-between px-5 py-3.5
+           border-b border-[rgba(0,150,255,0.08)];
+  }
+  .panel-title {
+    @apply font-rajdhani text-sm font-semibold tracking-[0.15em] uppercase text-[var(--text)]
+           flex items-center gap-2;
+  }
+  .panel-title .dot {
+    @apply w-1.5 h-1.5 rounded-full bg-[var(--blue)] shadow-[0_0_6px_var(--blue)];
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold tracking-wide;
+  }
+  .badge-p1 { @apply bg-red-500/20 text-red-400 border border-red-500/30; }
+  .badge-p2 { @apply bg-amber-500/15 text-amber-400 border border-amber-500/25; }
+  .badge-p3 { @apply bg-blue-500/15 text-blue-300 border border-blue-500/20; }
+  .badge-p4 { @apply bg-slate-500/15 text-slate-400 border border-slate-500/20; }
+
+  .status-dot {
+    @apply w-1.5 h-1.5 rounded-full inline-block;
+  }
+
+  .input {
+    @apply w-full bg-[var(--navy3)] border border-[var(--border)] rounded-md
+           px-3 py-2 text-sm text-[var(--text)] placeholder-[var(--text3)]
+           focus:outline-none focus:border-[var(--blue)] focus:ring-1 focus:ring-[var(--blue)]
+           transition-colors;
+  }
+  .label {
+    @apply block text-[10px] font-semibold uppercase tracking-widest text-[var(--text3)] mb-1.5;
+  }
+
+  .table-container {
+    @apply w-full overflow-x-auto;
+  }
+  table { @apply w-full border-collapse; }
+  thead th {
+    @apply text-[9px] font-semibold tracking-[0.2em] uppercase text-[var(--text3)]
+           px-4 py-2.5 text-left border-b border-[rgba(0,150,255,0.08)];
+  }
+  tbody td {
+    @apply px-4 py-3 text-xs text-[var(--text2)] border-b border-[rgba(0,150,255,0.05)];
+  }
+  tbody tr:last-child td { @apply border-0; }
+  tbody tr:hover td { @apply bg-[rgba(0,150,255,0.03)] text-[var(--text)]; }
+}
