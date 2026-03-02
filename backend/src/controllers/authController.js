@@ -111,9 +111,17 @@ const login = async (req, res) => {
 
     logger.info('Login bem-sucedido', { login: loginInput, ip, perfil: usuario.perfil });
 
+    // Refresh token via cookie httpOnly (não exposto ao JS)
+    res.cookie('sigpol_rt', refreshToken, {
+      httpOnly: true,
+      secure:   process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge:   7 * 24 * 60 * 60 * 1000, // 7 dias em ms
+      path:     '/api/v1/auth',
+    });
+
     return res.json({
       token,
-      refresh_token: refreshToken,
       usuario: {
         id:             usuario.id,
         login:          usuario.login,
@@ -132,12 +140,20 @@ const login = async (req, res) => {
 };
 
 /**
+ * POST /api/v1/auth/logout
+ */
+const logout = (req, res) => {
+  res.clearCookie('sigpol_rt', { path: '/api/v1/auth' });
+  res.json({ mensagem: 'Sessão encerrada com sucesso' });
+};
+
+/**
  * POST /api/v1/auth/refresh
  */
 const refreshToken = async (req, res) => {
-  const { refresh_token } = req.body;
+  const refresh_token = req.cookies?.sigpol_rt;
   if (!refresh_token) {
-    return res.status(400).json({ erro: 'refresh_token não fornecido' });
+    return res.status(401).json({ erro: 'Sessão expirada. Faça login novamente.' });
   }
 
   try {
@@ -174,4 +190,4 @@ const me = async (req, res) => {
   res.json({ usuario: req.usuario });
 };
 
-module.exports = { login, refreshToken, me };
+module.exports = { login, logout, refreshToken, me };

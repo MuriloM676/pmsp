@@ -111,3 +111,58 @@ src/pages/OcorrenciaDetalhe.tsx(56,14): error TS7053
 src/pages/OcorrenciaDetalhe.tsx(82,43): error TS7053
 src/pages/Policiais.tsx(148,59): error TS2352
 ```
+---
+
+## Sessão 4 — 02/03/2026 (Hardening de Segurança)
+
+### Melhorias Implementadas
+
+#### 1. Refresh Token via Cookie `httpOnly` — elimina exposição a XSS
+
+O `refresh_token` era retornado no corpo JSON do login e armazenado em `localStorage`, onde qualquer script malicioso poderia lê-lo. Agora é trafegado exclusivamente via cookie `httpOnly; Secure; SameSite=Strict`, inacessível ao JavaScript.
+
+#### 2. RBAC real nas rotas do Frontend
+
+O `PrivateRoute` verificava apenas `isAuthenticated`, permitindo que qualquer usuário logado acessasse `/auditoria` ou `/configuracoes` diretamente pela URL. Adicionado `RoleRoute` com verificação de `temPermissao()`.
+
+#### 3. Clamping do parâmetro `limit` na paginação — previne DoS
+
+Os controllers aceitavam valores arbitrários de `limit` via query string (ex.: `?limit=999999`), podendo sobrecarregar o banco. Agora o valor é sanitizado com `Math.min(MAX, Math.max(1, parseInt(limit)))`.
+
+### Arquivos Modificados
+
+#### Backend
+
+| Arquivo | Alteração |
+|---|---|
+| `backend/package.json` | Dependência `cookie-parser` adicionada |
+| `backend/src/server.js` | Import e registro do middleware `cookie-parser` |
+| `backend/src/controllers/authController.js` | `login` seta cookie `sigpol_rt` (`httpOnly`, `Secure`, `SameSite=strict`, 7d) em vez de retornar `refresh_token` no JSON; `refreshToken` lê de `req.cookies.sigpol_rt`; adicionada função `logout` com `res.clearCookie()` |
+| `backend/src/routes/index.js` | Rota `POST /auth/refresh` simplificada (sem body validator); adicionada rota `POST /auth/logout` |
+| `backend/src/controllers/ocorrenciasController.js` | `limit` clampado a `[1, 100]` via `safeLimit`; `page` sanitizado com `Math.max(1, ...)` |
+| `backend/src/controllers/policiaisController.js` | Mesmo clamping em `listar` e `listarEscalas` |
+| `backend/src/controllers/viaturasController.js` | Mesmo clamping em `listar` |
+
+#### Frontend
+
+| Arquivo | Alteração |
+|---|---|
+| `frontend/src/store/authStore.ts` | `setAuth` não recebe mais o parâmetro `refresh`; `logout` remove apenas `sigpol_token` do `localStorage` |
+| `frontend/src/services/api.ts` | Interceptor de 401 faz `POST /auth/refresh` com `withCredentials: true` em vez de ler `sigpol_refresh` do `localStorage`; em caso de falha chama `POST /auth/logout` antes de redirecionar |
+| `frontend/src/pages/Login.tsx` | `setAuth` chamado sem o terceiro argumento `refresh_token` |
+| `frontend/src/components/layout/AppLayout.tsx` | `handleLogout` agora é `async` e chama `POST /auth/logout` no servidor antes de limpar o estado local |
+| `frontend/src/App.tsx` | Import de `temPermissao` adicionado; adicionado componente `RoleRoute`; rotas `/viaturas`, `/policiais`, `/escalas`, `/manutencoes`, `/inteligencia/*` exigem perfil mínimo `Supervisor`; `/auditoria` e `/configuracoes` exigem `Administrador` |
+
+### Detalhes do `RoleRoute`
+
+```tsx
+function RoleRoute({ children, minPerfil }) {
+  const { usuario } = useAuthStore()
+  if (!usuario || !temPermissao(usuario.perfil, minPerfil)) {
+    return <Navigate to="/" replace />
+  }
+  return <>{children}</>
+}
+```
+
+Hierarquia de perfis: `Operador < Supervisor < Gestor < Comandante < Administrador`

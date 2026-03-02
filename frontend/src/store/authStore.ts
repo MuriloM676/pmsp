@@ -7,7 +7,7 @@ interface AuthState {
   usuario: Usuario | null
   token: string | null
   isAuthenticated: boolean
-  setAuth: (usuario: Usuario, token: string, refresh: string) => void
+  setAuth: (usuario: Usuario, token: string) => void
   logout: () => void
 }
 
@@ -18,15 +18,13 @@ export const useAuthStore = create<AuthState>()(
       token: null,
       isAuthenticated: false,
 
-      setAuth: (usuario, token, refresh) => {
+      setAuth: (usuario, token) => {
         localStorage.setItem('sigpol_token', token)
-        localStorage.setItem('sigpol_refresh', refresh)
         set({ usuario, token, isAuthenticated: true })
       },
 
       logout: () => {
         localStorage.removeItem('sigpol_token')
-        localStorage.removeItem('sigpol_refresh')
         set({ usuario: null, token: null, isAuthenticated: false })
       },
     }),

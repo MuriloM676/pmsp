@@ -38,11 +38,9 @@ router.post('/auth/login',
   authController.login
 );
 
-router.post('/auth/refresh',
-  body('refresh_token').notEmpty(),
-  validar,
-  authController.refreshToken
-);
+router.post('/auth/refresh', authController.refreshToken);
+
+router.post('/auth/logout', authController.logout);
 
 router.get('/auth/me',
   autenticar,

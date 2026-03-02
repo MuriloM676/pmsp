@@ -11,7 +11,8 @@ const logger = require('../utils/logger');
  */
 const listar = async (req, res) => {
   const { status, tipo, id_unidade, busca, page = 1, limit = 50 } = req.query;
-  const offset = (parseInt(page) - 1) * parseInt(limit);
+  const safeLimit = Math.min(Math.max(1, parseInt(limit) || 50), 100);
+  const offset = (Math.max(1, parseInt(page) || 1) - 1) * safeLimit;
   const params = [];
   const filtros = [];
 
@@ -51,7 +52,7 @@ const listar = async (req, res) => {
          AND oc.status IN ('Despachada', 'Em Atendimento')
        ${where}
        ORDER BY v.prefixo
-       LIMIT $${params.push(parseInt(limit))} OFFSET $${params.push(offset)}`,
+       LIMIT $${params.push(safeLimit)} OFFSET $${params.push(offset)}`,
       params
     );
 
@@ -72,8 +73,8 @@ const listar = async (req, res) => {
       dados: viaturas,
       sumario: sumario[0],
       paginacao: {
-        pagina: parseInt(page),
-        limite: parseInt(limit),
+        pagina: Math.max(1, parseInt(page) || 1),
+        limite: safeLimit,
       },
     });
   } catch (err) {

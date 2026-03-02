@@ -13,7 +13,8 @@ const listar = async (req, res) => {
     page = 1, limit = 20,
   } = req.query;
 
-  const offset = (parseInt(page) - 1) * parseInt(limit);
+  const safeLimit = Math.min(Math.max(1, parseInt(limit) || 20), 100);
+  const offset = (Math.max(1, parseInt(page) || 1) - 1) * safeLimit;
   const params = [];
   const filtros = [];
 
@@ -51,7 +52,7 @@ const listar = async (req, res) => {
        ORDER BY
          CASE o.prioridade WHEN 'P1' THEN 1 WHEN 'P2' THEN 2 WHEN 'P3' THEN 3 ELSE 4 END,
          o.data_hora_abertura DESC
-       LIMIT $${params.push(parseInt(limit))} OFFSET $${params.push(offset)}`,
+       LIMIT $${params.push(safeLimit)} OFFSET $${params.push(offset)}`,
       params
     );
 
@@ -71,9 +72,9 @@ const listar = async (req, res) => {
       dados: ocorrencias,
       paginacao: {
         total,
-        pagina: parseInt(page),
-        limite: parseInt(limit),
-        paginas: Math.ceil(total / parseInt(limit)),
+        pagina: Math.max(1, parseInt(page) || 1),
+        limite: safeLimit,
+        paginas: Math.ceil(total / safeLimit),
       },
     });
   } catch (err) {

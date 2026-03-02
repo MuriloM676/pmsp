@@ -15,7 +15,8 @@ const listar = async (req, res) => {
     busca, page = 1, limit = 30,
   } = req.query;
 
-  const offset = (parseInt(page) - 1) * parseInt(limit);
+  const safeLimit = Math.min(Math.max(1, parseInt(limit) || 30), 100);
+  const offset = (Math.max(1, parseInt(page) || 1) - 1) * safeLimit;
   const params = [];
   const filtros = [];
 
@@ -48,7 +49,7 @@ const listar = async (req, res) => {
            'Terceiro Sargento','Cabo','Soldado'
          ]::text[], p.posto_graduacao::text),
          p.nome_guerra
-       LIMIT $${params.push(parseInt(limit))} OFFSET $${params.push(offset)}`,
+       LIMIT $${params.push(safeLimit)} OFFSET $${params.push(offset)}`,
       params
     );
 
@@ -62,9 +63,9 @@ const listar = async (req, res) => {
       dados: policiais,
       paginacao: {
         total: parseInt(cnt[0].total),
-        pagina: parseInt(page),
-        limite: parseInt(limit),
-        paginas: Math.ceil(cnt[0].total / parseInt(limit)),
+        pagina: Math.max(1, parseInt(page) || 1),
+        limite: safeLimit,
+        paginas: Math.ceil(cnt[0].total / safeLimit),
       },
     });
   } catch (err) {
@@ -259,7 +260,8 @@ const atualizar = async (req, res) => {
  */
 const listarEscalas = async (req, res) => {
   const { data, id_unidade, turno, page = 1, limit = 50 } = req.query;
-  const offset = (parseInt(page) - 1) * parseInt(limit);
+  const safeLimit = Math.min(Math.max(1, parseInt(limit) || 50), 100);
+  const offset = (Math.max(1, parseInt(page) || 1) - 1) * safeLimit;
   const params = [];
   const filtros = [];
 
@@ -292,7 +294,7 @@ const listarEscalas = async (req, res) => {
        JOIN unidades u ON u.id = e.id_unidade
        ${where}
        ORDER BY e.data_servico, e.turno, p.posto_graduacao
-       LIMIT $${params.push(parseInt(limit))} OFFSET $${params.push(offset)}`,
+       LIMIT $${params.push(safeLimit)} OFFSET $${params.push(offset)}`,
       params
     );
 

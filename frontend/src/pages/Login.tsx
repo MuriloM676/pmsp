@@ -19,7 +19,7 @@ export default function Login() {
     setLoading(true); setErro('')
     try {
       const res = await authService.login(data.login, data.senha)
-      setAuth(res.data.usuario, res.data.token, res.data.refresh_token)
+      setAuth(res.data.usuario, res.data.token)
       navigate('/')
     } catch (err: unknown) {
       const msg = (err as { response?: { data?: { erro?: string } } })?.response?.data?.erro

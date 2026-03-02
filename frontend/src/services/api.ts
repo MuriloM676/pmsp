@@ -14,26 +14,23 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// Renova token automaticamente se expirado
+// Renova token automaticamente se expirado (refresh_token via cookie httpOnly)
 api.interceptors.response.use(
   (res) => res,
   async (err) => {
     const original = err.config
     if (err.response?.status === 401 && !original._retry) {
       original._retry = true
-      const refresh = localStorage.getItem('sigpol_refresh')
-      if (refresh) {
-        try {
-          const { data } = await axios.post('/api/v1/auth/refresh', { refresh_token: refresh })
-          localStorage.setItem('sigpol_token', data.token)
-          original.headers.Authorization = `Bearer ${data.token}`
-          return api(original)
-        } catch {
-          localStorage.clear()
-          window.location.href = '/login'
-        }
-      } else {
-        localStorage.clear()
+      try {
+        // O cookie sigpol_rt é enviado automaticamente pelo browser
+        const { data } = await axios.post('/api/v1/auth/refresh', {}, { withCredentials: true })
+        localStorage.setItem('sigpol_token', data.token)
+        original.headers.Authorization = `Bearer ${data.token}`
+        return api(original)
+      } catch {
+        localStorage.removeItem('sigpol_token')
+        // Invalida o cookie no servidor antes de redirecionar
+        await axios.post('/api/v1/auth/logout', {}, { withCredentials: true }).catch(() => {})
         window.location.href = '/login'
       }
     }

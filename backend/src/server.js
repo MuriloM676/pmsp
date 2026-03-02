@@ -7,6 +7,7 @@ const cors       = require('cors');
 const morgan     = require('morgan');
 const compression = require('compression');
 const rateLimit  = require('express-rate-limit');
+const cookieParser = require('cookie-parser');
 
 const logger  = require('./utils/logger');
 const routes  = require('./routes');
@@ -66,8 +67,9 @@ app.use(`${PREFIX}/auth/login`, rateLimit({
   message: { erro: 'Muitas tentativas de login. Aguarde 15 minutos.' },
 }));
 
-// Parsing e compressão
+// Parsing, cookies e compressão
 app.use(compression());
+app.use(cookieParser());
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true }));
 

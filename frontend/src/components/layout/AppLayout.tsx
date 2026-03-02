@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/store/authStore'
 import { temPermissao } from '@/utils'
+import axios from 'axios'
 
 const navItems = [
   { section: 'Principal', items: [
@@ -45,7 +46,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     return () => clearInterval(id)
   }, [])
 
-  const handleLogout = () => { logout(); navigate('/login') }
+  const handleLogout = async () => {
+    await axios.post('/api/v1/auth/logout', {}, { withCredentials: true }).catch(() => {})
+    logout()
+    navigate('/login')
+  }
 
   return (
     <div className="min-h-screen flex flex-col" style={{ fontFamily: "'Exo 2', sans-serif" }}>
