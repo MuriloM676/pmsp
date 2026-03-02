@@ -5,7 +5,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { ocorrenciasService } from '@/services/api'
 import { PageHeader, Spinner, Modal } from '@/components/ui'
 import { fmtData, statusOcorrenciaConfig, prioridadeCor, fmtMinutos } from '@/utils'
-import type { StatusOcorrencia } from '@/types'
+import type { Ocorrencia, StatusOcorrencia, PrioridadeOcorrencia } from '@/types'
 
 const STATUS_VALIDOS: StatusOcorrencia[] = [
   'Despachada', 'Em Atendimento', 'Aguardando DP', 'Encerrada', 'Cancelada',
@@ -21,7 +21,7 @@ export default function OcorrenciaDetalhe() {
 
   const { data: oc, isLoading } = useQuery({
     queryKey: ['ocorrencia', id],
-    queryFn: () => ocorrenciasService.buscar(id!).then(r => r.data),
+    queryFn: () => ocorrenciasService.buscar(id!).then(r => r.data as Ocorrencia),
     enabled: !!id,
   })
 
@@ -79,7 +79,7 @@ export default function OcorrenciaDetalhe() {
       }`}>
         <span className={`status-dot w-3 h-3 ${sc.dot}`} />
         <span className={`font-rajdhani font-bold text-xl tracking-widest ${sc.text}`}>{sc.label}</span>
-        <span className={`ml-auto badge ${prioridadeCor[oc.prioridade]}`}>
+        <span className={`ml-auto badge ${prioridadeCor[oc.prioridade as PrioridadeOcorrencia]}`}>
           Prioridade {oc.prioridade}
         </span>
       </div>

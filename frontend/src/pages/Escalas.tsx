@@ -136,7 +136,7 @@ export default function Escalas() {
 
       {/* Modal Nova Escala */}
       <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="INSERIR ESCALA" size="md">
-        <form onSubmit={handleSubmit(d => mutation.mutate(d as Record<string, unknown>))}
+        <form onSubmit={handleSubmit(d => mutation.mutate(d as unknown as Record<string, unknown>))}
               className="space-y-4">
           <Field label="Policial *" error={errors.id_policial?.message}>
             <select {...register('id_policial', { required: 'Obrigatório' })} className="input">

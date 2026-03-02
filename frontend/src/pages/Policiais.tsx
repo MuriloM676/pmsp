@@ -145,7 +145,7 @@ export default function Policiais() {
       {/* Modal Cadastrar PM */}
       <Modal open={modalOpen} onClose={() => { setModalOpen(false); reset() }}
              title="CADASTRAR POLICIAL MILITAR" size="lg">
-        <form onSubmit={handleSubmit(d => mutation.mutate(d as Record<string, unknown>))}
+        <form onSubmit={handleSubmit(d => mutation.mutate(d as unknown as Record<string, unknown>))}
               className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <Field label="RG PM *" error={errors.rg_pm?.message}>
